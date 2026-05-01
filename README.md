@@ -70,7 +70,7 @@ ElCare/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ElCare.git
+git clone https://github.com/yanshikasingh055-spec/ELcare_Project
 cd ElCare
 ```
 
@@ -164,3 +164,4 @@ This application is built for **educational and research purposes only**. It is 
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
+
