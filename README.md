@@ -140,11 +140,15 @@ Models are trained on startup using the datasets in the `/data` folder.
 ### Home Page
 ![Home](screenshots/home.png)
 
+### Sign Up Page 
+![SignUp](screenshots/Signup.png)
+
 ### Login Page
 ![Login](screenshots/login.png)
 
 ### Prediction Page
 ![Prediction](screenshots/prediction.png)
+
 ---
 
 ## ⚠️ Disclaimer
