@@ -104,16 +104,9 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        // Sample data for Diabetes
         const diabetesSampleData = {
-            pregnancies: 4,
-            glucose: 110,
-            bloodpressure: 92,
-            skinthickness: 0,
-            insulin: 0,
-            bmi: 37.6,
-            dpf: 0.191,
-            age: 30
+            pregnancies: 4, glucose: 110, bloodpressure: 92,
+            skinthickness: 0, insulin: 0, bmi: 37.6, dpf: 0.191, age: 30
         };
 
         document.getElementById('sampleBtn').addEventListener('click', function() {
@@ -137,7 +130,6 @@
                 parseInt(document.getElementById('age').value)
             ];
 
-            // Validate all features are numbers
             if (features.some(isNaN)) {
                 showNotification('Please fill in all fields with valid numbers', 'error');
                 return;
@@ -148,14 +140,19 @@
             try {
                 const response = await fetch('/api/predict/diabetes', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ features: features })
                 });
 
                 const data = await response.json();
-                
+
+                // FIX: handle 401 specifically before generic error
+                if (response.status === 401) {
+                    showNotification('Please log in to use predictions', 'error');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                    return;
+                }
+
                 if (response.ok) {
                     displayDiabetesResult(data);
                 } else {
@@ -169,73 +166,50 @@
         });
 
         function displayDiabetesResult(data) {
-    const resultContainer = document.getElementById('resultContainer');
-    const isPositive = data.prediction === 1;
+            const resultContainer = document.getElementById('resultContainer');
+            const isPositive = data.prediction === 1;
 
-    resultContainer.innerHTML = `
-        <div class="result-card ${isPositive ? 'positive' : 'negative'}">
-            <div class="result-header">
-                <i class="fas ${isPositive ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
-                <h3>${isPositive ? 'Diabetes Detected' : 'No Diabetes Detected'}</h3>
-            </div>
-
-            <div class="result-body">
-                <div class="prediction-indicator">
-                    <div class="indicator-circle ${isPositive ? 'positive' : 'negative'}">
-                        <span>${isPositive ? 'POSITIVE' : 'NEGATIVE'}</span>
+            resultContainer.innerHTML = `
+                <div class="result-card ${isPositive ? 'positive' : 'negative'}">
+                    <div class="result-header">
+                        <i class="fas ${isPositive ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+                        <h3>${isPositive ? 'Diabetes Detected' : 'No Diabetes Detected'}</h3>
                     </div>
-                    <p class="confidence">
-                        Prediction Confidence: <strong>High</strong>
-                    </p>
+                    <div class="result-body">
+                        <div class="prediction-indicator">
+                            <div class="indicator-circle ${isPositive ? 'positive' : 'negative'}">
+                                <span>${isPositive ? 'POSITIVE' : 'NEGATIVE'}</span>
+                            </div>
+                            <p class="confidence">Prediction Confidence: <strong>High</strong></p>
+                        </div>
+                        <div class="result-details">
+                            <p><i class="fas fa-info-circle"></i> <strong>Result:</strong> ${data.message}</p>
+                            <p><i class="fas fa-code"></i> <strong>Prediction Value:</strong> ${data.prediction}</p>
+                            <p><i class="fas fa-clock"></i> <strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                        </div>
+                        <div class="recommendations">
+                            <h4><i class="fas fa-stethoscope"></i> Recommendations:</h4>
+                            <ul>
+                                ${isPositive ?
+                                    '<li>Consult an endocrinologist</li>' +
+                                    '<li>Get HbA1c test</li>' +
+                                    '<li>Monitor blood sugar regularly</li>' +
+                                    '<li>Follow medical advice</li>' :
+                                    '<li>Maintain healthy diet</li>' +
+                                    '<li>Exercise regularly</li>' +
+                                    '<li>Annual glucose screening</li>' +
+                                    '<li>Stay alert to symptoms</li>'
+                                }
+                            </ul>
+                        </div>
+                        <p class="disclaimer">⚠️ This is not a medical diagnosis.</p>
+                    </div>
                 </div>
+            `;
 
-                <div class="result-details">
-                    <p><i class="fas fa-info-circle"></i>
-                        <strong>Result:</strong> ${data.message}
-                    </p>
-
-                    <p><i class="fas fa-code"></i>
-                        <strong>Prediction Value:</strong> ${data.prediction}
-                    </p>
-
-                    <p><i class="fas fa-clock"></i>
-                        <strong>Timestamp:</strong> ${new Date().toLocaleString()}
-                    </p>
-                </div>
-
-                <div class="recommendations">
-                    <h4><i class="fas fa-stethoscope"></i> Recommendations:</h4>
-                    <ul>
-                        ${
-                            isPositive
-                                ? `
-                                    <li>Consult an endocrinologist</li>
-                                    <li>Get HbA1c test</li>
-                                    <li>Monitor blood sugar regularly</li>
-                                    <li>Follow medical advice</li>
-                                  `
-                                : `
-                                    <li>Maintain healthy diet</li>
-                                    <li>Exercise regularly</li>
-                                    <li>Annual glucose screening</li>
-                                    <li>Stay alert to symptoms</li>
-                                  `
-                        }
-                    </ul>
-                </div>
-
-                <p class="disclaimer">
-                    ⚠️ This is not a medical diagnosis.
-                </p>
-            </div>
-        </div>
-    `;
-
-    resultContainer.scrollIntoView({ behavior: 'smooth' });
-    showNotification('Prediction completed successfully!', 'success');
-}
-
-        
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+            showNotification('Prediction completed successfully!', 'success');
+        }
     </script>
 </body>
 </html>

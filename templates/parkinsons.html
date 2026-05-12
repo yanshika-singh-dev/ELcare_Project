@@ -177,7 +177,6 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        // Sample data for Parkinson's
         const parkinsonsSampleData = [
             119.992, 157.302, 74.997, 0.00784, 0.00007, 0.00370, 0.00554,
             0.01109, 0.04374, 0.426, 0.02182, 0.03130, 0.02971, 0.06545,
@@ -210,14 +209,19 @@
             try {
                 const response = await fetch('/api/predict/parkinsons', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ features: features })
                 });
 
                 const data = await response.json();
-                
+
+                // FIX: handle 401 specifically before generic error
+                if (response.status === 401) {
+                    showNotification('Please log in to use predictions', 'error');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                    return;
+                }
+
                 if (response.ok) {
                     displayParkinsonsResult(data);
                 } else {
@@ -271,7 +275,6 @@
                 </div>
             `;
             
-            // Scroll to results
             resultContainer.scrollIntoView({ behavior: 'smooth' });
             showNotification('Prediction completed successfully!', 'success');
         }

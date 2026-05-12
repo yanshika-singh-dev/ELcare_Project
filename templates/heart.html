@@ -156,29 +156,16 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        // Sample data for Heart Disease
         const heartSampleData = {
-            age: 41,
-            sex: 0,
-            cp: 1,
-            trestbps: 130,
-            chol: 204,
-            fbs: 0,
-            restecg: 0,
-            thalach: 172,
-            exang: 0,
-            oldpeak: 1.4,
-            slope: 2,
-            ca: 0,
-            thal: 2
+            age: 41, sex: 0, cp: 1, trestbps: 130, chol: 204,
+            fbs: 0, restecg: 0, thalach: 172, exang: 0,
+            oldpeak: 1.4, slope: 2, ca: 0, thal: 2
         };
 
         document.getElementById('sampleBtn').addEventListener('click', function() {
             for (const [key, value] of Object.entries(heartSampleData)) {
                 const element = document.getElementById(key);
-                if (element) {
-                    element.value = value;
-                }
+                if (element) element.value = value;
             }
             showNotification('Sample data loaded!', 'success');
         });
@@ -202,7 +189,6 @@
                 parseInt(document.getElementById('thal').value)
             ];
 
-            // Validate all features are numbers
             if (features.some(isNaN)) {
                 showNotification('Please fill in all fields with valid numbers', 'error');
                 return;
@@ -213,14 +199,19 @@
             try {
                 const response = await fetch('/api/predict/heart', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ features: features })
                 });
 
                 const data = await response.json();
-                
+
+                // FIX: handle 401 specifically before generic error
+                if (response.status === 401) {
+                    showNotification('Please log in to use predictions', 'error');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                    return;
+                }
+
                 if (response.ok) {
                     displayHeartResult(data);
                 } else {
@@ -274,7 +265,6 @@
                 </div>
             `;
             
-            // Scroll to results
             resultContainer.scrollIntoView({ behavior: 'smooth' });
             showNotification('Prediction completed successfully!', 'success');
         }
